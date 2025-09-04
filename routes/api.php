@@ -31,9 +31,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tickets', [TicketController::class, 'index']);
     Route::post('/tickets', [TicketController::class, 'store']);
     Route::get('/tickets/{id}', [TicketController::class, 'show']);
+    Route::get('/tickets/users/assign', [TicketController::class, 'getSupportStaff']);
     Route::put('/tickets/{id}/assign', [TicketController::class, 'assign']);
     Route::put('/tickets/{id}/status', [TicketController::class, 'updateStatus']);
     Route::delete('/tickets/{id}', [TicketController::class, 'destroy']);
+
 
     // Conversation
     Route::get('/tickets/{id}/conversations', [ConversationController::class, 'index']);

@@ -25,9 +25,9 @@ class TicketController extends Controller
         $user = Auth::user();
 
         if ($user->role === 'admin_university') {
-            $tickets = Ticket::where('created_by', $user->id)->get();
+            $tickets = Ticket::with(['university', 'assigned'])->where('created_by', $user->id)->get();
         } elseif ($user->role === 'support_staff') {
-            $tickets = Ticket::where('assigned_to', $user->id)->orWhereNull('assigned_to')->get();
+            $tickets = Ticket::with(['university', 'assigned'])->where('assigned_to', $user->id)->orWhereNull('assigned_to')->get();
         } else {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -67,6 +67,19 @@ class TicketController extends Controller
     {
         $ticket = Ticket::with('conversations')->findOrFail($id);
         return response()->json($ticket);
+    }
+
+    // PUT /api/tickets/users/assign
+    public function getSupportStaff()
+    {
+        $users = User::where('role', 'support_staff')
+            ->select('id', 'name', 'email')
+            ->get();
+
+        return response()->json([
+            'message' => 'List support staff retrieved successfully',
+            'data'    => $users
+        ]);
     }
 
     // PUT /api/tickets/{id}/assign

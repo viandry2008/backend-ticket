@@ -17,6 +17,7 @@ class AuthController extends Controller
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
             'role'     => 'required|in:admin_university,support_staff',
+            'university_id' => 'required_if:role,admin_university|exists:universities,id'
         ]);
 
         if ($validator->fails()) {
@@ -24,17 +25,18 @@ class AuthController extends Controller
         }
 
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
-            'role'     => $request->role,
+            'name'          => $request->name,
+            'email'         => $request->email,
+            'password'      => Hash::make($request->password),
+            'role'          => $request->role,
+            'university_id' => $request->role === 'admin_university' ? $request->university_id : null,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user'    => $user,
+            'user'    => $user->load('university'),
             'token'   => $token,
         ], 201);
     }
@@ -51,7 +53,7 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::with('university')->where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['error' => 'Invalid credentials'], 401);
