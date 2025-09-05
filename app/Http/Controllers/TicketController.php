@@ -110,19 +110,31 @@ class TicketController extends Controller
         $ticket = Ticket::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:open,assigned,in_progress,resolved,closed'
+            'status' => 'required|in:Open,Assigned,In Progress,Resolved,Closed'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $ticket->update(['status' => $request->status]);
+        // Jika status resolved, set juga resolved_at
+        if ($request->status === 'Resolved') {
+            $ticket->status = 'Resolved';
+            $ticket->resolved_at = now();
+        } else {
+            $ticket->status = $request->status;
+        }
 
-        // Broadcast
-        $this->ably->channel("ticket.$ticket->id")->publish('ticket.updated', $ticket->toArray());
+        $ticket->save();
 
-        return response()->json($ticket);
+        // Broadcast realtime via Ably
+        $this->ably->channel("ticket.{$ticket->id}")
+            ->publish('ticket.updated', $ticket->toArray());
+
+        return response()->json([
+            'message' => "Ticket status updated to {$ticket->status}",
+            'data'    => $ticket
+        ]);
     }
 
     // DELETE /api/tickets/{id}
