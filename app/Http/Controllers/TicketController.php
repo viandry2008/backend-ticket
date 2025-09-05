@@ -110,7 +110,7 @@ class TicketController extends Controller
         $ticket = Ticket::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:Open,Assigned,In Progress,Resolved,Closed'
+            'status' => 'required|in:open,assigned,in_progress,resolved,closed'
         ]);
 
         if ($validator->fails()) {
