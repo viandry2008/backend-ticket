@@ -65,7 +65,7 @@ class TicketController extends Controller
     // GET /api/tickets/{id}
     public function show($id)
     {
-        $ticket = Ticket::with('conversations')->findOrFail($id);
+        $ticket = Ticket::with(['assigned','conversations.sender'])->findOrFail($id);
         return response()->json($ticket);
     }
 

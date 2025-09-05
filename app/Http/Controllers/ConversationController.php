@@ -22,7 +22,7 @@ class ConversationController extends Controller
     public function index($ticketId)
     {
         $ticket = Ticket::findOrFail($ticketId);
-        $conversations = $ticket->conversations()->orderBy('created_at', 'asc')->get();
+        $conversations = $ticket->conversations()->with('sender:id,name,email') ->orderBy('created_at', 'asc')->get();
 
         return response()->json($conversations);
     }
@@ -47,6 +47,8 @@ class ConversationController extends Controller
             'message' => $request->message,
             'attachment' => $request->attachment
         ]);
+
+         $conversation->load('sender:id,name,email');
 
         // Broadcast via Ably
         $this->ably->channel("ticket.$ticketId")->publish('ticket.message', $conversation->toArray());

@@ -15,4 +15,9 @@ class TicketConversation extends Model
     {
         return $this->belongsTo(Ticket::class);
     }
+
+    public function sender()
+    {
+        return $this->belongsTo(User::class, 'sender_id');
+    }
 }
