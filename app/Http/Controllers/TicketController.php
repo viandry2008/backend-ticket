@@ -65,7 +65,7 @@ class TicketController extends Controller
     // GET /api/tickets/{id}
     public function show($id)
     {
-        $ticket = Ticket::with(['assigned','conversations.sender'])->findOrFail($id);
+        $ticket = Ticket::with(['createdBy.university','assigned','conversations.sender'])->findOrFail($id);
         return response()->json($ticket);
     }
 
@@ -73,7 +73,8 @@ class TicketController extends Controller
     public function getSupportStaff()
     {
         $users = User::where('role', 'support_staff')
-            ->select('id', 'name', 'email')
+            // ->where('id', '!=', Auth::id())
+            ->select('id', 'name', 'email','role')
             ->get();
 
         return response()->json([
